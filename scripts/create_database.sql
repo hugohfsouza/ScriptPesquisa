@@ -78,3 +78,27 @@ CREATE TABLE `repositorios` (
 --   `usar` varchar(45) DEFAULT '0',
 --   PRIMARY KEY (`id`)
 -- ) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+
+
+
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `login` varchar(100) DEFAULT NULL,
+  `idGithub` bigint(20) DEFAULT NULL,
+  `type` varchar(45) DEFAULT NULL,
+  `name` varchar(150) DEFAULT NULL,
+  `company` varchar(255) DEFAULT NULL,
+  `blog` varchar(255) DEFAULT NULL,
+  `location` varchar(255) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `twitter_username` varchar(255) DEFAULT NULL,
+  `public_repos` varchar(255) DEFAULT NULL,
+  `public_gists` varchar(255) DEFAULT NULL,
+  `followers` bigint(20) DEFAULT NULL,
+  `following` bigint(20) DEFAULT NULL,
+  `erro` tinyint(4) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `un_name` (`name`),
+  KEY `ix_name` (`name`)
+) ENGINE=MyISAM AUTO_INCREMENT=0 DEFAULT CHARSET=latin1;
+

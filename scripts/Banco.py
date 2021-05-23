@@ -197,10 +197,97 @@ class Banco():
 
     def getStatusRequestV2(self, token):
         retorno = 0;
+        self.cursor.execute("RESET QUERY CACHE;")
         linhas = self.cursor.execute("""select * from startstop where token = %s limit 1;""", (token, ) )
         for linha in self.cursor.fetchall():
             retorno = linha[1]
         return retorno;
 
 
+    def importUserPRtoUser(self):
+        self.cursor.execute("""INSERT into users(login) 
+                    select distinct `user` 
+                        from pull_requests as pr 
+                        where 
+                        not exists (select 1 from users as u where u.login = pr.user)""")
+        self.conn.commit()
 
+
+    def getUserToAnalyser(self,  inicio, fim):
+        self.cursor.execute("""SELECT `login` from users where id between %s and %s and idGithub is null and erro = 0 limit 1;""", (inicio, fim) )
+        return self.cursor.fetchone()
+
+
+    def saveUser(self, idGithub, typeUser, company, blog, location, email, twitter_username, public_repos, public_gists, followers, following, login, name):
+        try:
+            self.cursor.execute("""
+                UPDATE users set 
+                    idGithub = %s, 
+                    type = %s, 
+                    company = %s, 
+                    blog = %s, 
+                    location = %s, 
+                    email = %s, 
+                    twitter_username = %s, 
+                    public_repos = %s, 
+                    public_gists = %s, 
+                    followers = %s, 
+                    following = %s,
+                    name = %s
+                where login = %s
+
+            """, (
+                idGithub, 
+                typeUser, 
+                company, 
+                blog, 
+                location, 
+                email, 
+                twitter_username, 
+                public_repos, 
+                public_gists, 
+                followers, 
+                following, 
+                name, 
+                login
+            ) )
+            self.conn.commit()
+        except Exception as e:
+            print(e)
+            self.cursor.execute("""
+                UPDATE users set 
+                    erro = 1
+                where login = %s""", (login,))
+            self.conn.commit()
+
+    def saveUserErro(self, login):
+        self.cursor.execute(""" UPDATE users set  erro = 1 where login = %s""", (login, ) )
+        self.conn.commit()
+
+
+    def atualizaPr(self, idGithub, closed_at, merged_at):
+        # update pull_requests set closed_at = %s, merged_at = %s where github_id = %s
+        self.cursor.execute(""" UPDATE pull_requests set closed_at = %s, merged_at = %s where github_id = %s""", (closed_at, merged_at, idGithub  ) )
+        self.conn.commit()
+
+        pass
+
+    def getRepoParaRecuperarPRsParallel(self, idInicio, idFim):
+        retorno = False;
+        linhas = self.cursor.execute("""
+                SELECT * from repositorios
+                    where temTeste = 1
+                    and prs_analisados is null
+                    and id >= %s
+                    and id <= %s
+                    
+                    limit 1
+            """, (idInicio, idFim))
+        for linha in self.cursor.fetchall():
+            retorno = linha
+
+        return retorno;
+
+    def registrarPRsAnalisados(self, repo):
+        self.cursor.execute(""" UPDATE repositorios set prs_analisados = 1 where id = %s""", (repo, ) )
+        self.conn.commit()
