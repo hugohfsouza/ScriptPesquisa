@@ -42,20 +42,25 @@ def buscarArquivos(pullRequest):
 	result = requisitarGithub(str(pullRequest[6])+"/files?per_page=100&page="+str(pagina))
 	
 	while(len(result) > 0 and (not 'errors' in result) ):
+		listaArquivosPR = []
+		print(pullRequest[0])
 		for file in result:
-			print(file['filename'])
-			try:
-				banco.salvarFilesPR(
+			listaArquivosPR.append(
+				(
 					pullRequest[0], 
 					file['filename'],
 					file['additions'],
 					file['deletions'],
-					file['sha'],
+					file['sha']
 				)
-			except Exception as e:
-				print(e)
-				pass
+			)
 
+		try:
+			banco.salvarFilesPRBulk(listaArquivosPR)
+		except Exception as e:
+			print(e)
+			pass
+	
 		if(len(result) == 100):
 			pagina += 1
 			result = requisitarGithub(str(pullRequest[6])+"/files?per_page=100&page="+str(pagina))
@@ -68,18 +73,18 @@ def buscarArquivos(pullRequest):
 
 
 
-
-
 while(True):
 	if(banco.getStatusRequestV2(token) == 1):
-		pullRequest = banco.getPullRequestsToAnalizerRange(rangeInicial, rangeFinal)
-		if(pullRequest):
-			buscarArquivos(pullRequest)
-			print("id: "+ str(pullRequest[0]))
-			print("---------------------------")
-		else:
-			print("Todos os itens do range foram analisados")
-			time.sleep(tempoEspera)
+		pullRequests = banco.getPullRequestsToAnalizerRange(rangeInicial, rangeFinal)
+		
+		for pullRequest in pullRequests:
+			if(pullRequest):
+				buscarArquivos(pullRequest)
+				print("id: "+ str(pullRequest[0]))
+				print("---------------------------")
+			else:
+				print("Todos os itens do range foram analisados")
+				time.sleep(tempoEspera)
 	else:
 		print("esperando proxima janela")
 		time.sleep(tempoEspera)

@@ -76,5 +76,5 @@ banco = Banco()
 
 while(True):
 	banco.ajustar()
-	# banco.ajustarAdditionsDeletions()
+	banco.ajustarAdditionsDeletions()
 	time.sleep(120)

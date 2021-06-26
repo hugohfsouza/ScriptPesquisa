@@ -26,7 +26,7 @@ headers = {'Authorization': token,'Accept': 'application/vnd.github.v3+json'}
 
 queryInit = """ 
 {
-  search(query: "is:public language:Java fork:false mirror:false archived:false stars:>2000", type: REPOSITORY, first: 100, after: "#page#") {
+  search(query: "is:public language:PYTHON fork:false mirror:false archived:false stars:>2000", type: REPOSITORY, first: 100, after: "#page#") {
     repositoryCount
     pageInfo {
       endCursor

@@ -15,7 +15,7 @@ class Banco():
             "db":       config.get("MYSQL", "db"),
         }
 
-        self.conn = mysql.connector.connect(pool_name = "mypool", pool_size = 10,**dbconfig)
+        self.conn = mysql.connector.connect(pool_name = "mypool", pool_size = 5,**dbconfig)
         self.cursor = self.conn.cursor();
 
     def verificarExistenciaDeTokensNaBase(self, tokens):
@@ -29,7 +29,7 @@ class Banco():
     def getListaReposParaVerificarTestes(self):
         linhas = self.cursor.execute("""
                 SELECT nameWithOwner from repositorios
-                    where temTeste is null
+                    where temTeste is null 
                     and prs_recuperados is null
             """)
         return self.cursor.fetchall();
@@ -45,6 +45,21 @@ class Banco():
                     -- and temTeste = 0
                     limit 1
             """)
+        for linha in self.cursor.fetchall():
+            retorno = linha
+
+        return retorno;
+
+    def getRepoParaRecuperarPRsRange(self, inicio, fim):
+        retorno = False;
+        linhas = self.cursor.execute("""
+                SELECT * from repositorios
+                    where temTeste = 1
+                    and prs_recuperados is null
+                    and id between %s and %s
+                    -- and temTeste = 0
+                    limit 1
+            """, (inicio, fim))
         for linha in self.cursor.fetchall():
             retorno = linha
 
@@ -87,21 +102,25 @@ class Banco():
     def getPullRequestsToAnalizerRange(self, inicio, fim):
 
         retorno = False;
+
         linhas = self.cursor.execute("""
                 SELECT b.* from repositorios as a
                     inner join pull_requests as b on (a.id = b.repo_id)
                     where a.temTeste = 1
                     and a.prs_recuperados = 1
                     and b.pr_analisado = 0
+                    and a.id in (1856,1935,1827,1826,1968,2418,1961,2189,2057,1812,1978,2645,2334,1807,1905,2417,1833,2029,1861,1880,1917,2012,2257,1883,1950,2458,2391,1824,1965,2559)
                     and b.id >= """+str(inicio)+""" 
                     and b.id <= """+str(fim)+"""
                     order by id desc
-                    limit 1
+                    limit 10
             """)
-        for linha in self.cursor.fetchall():
-            retorno = linha
 
-        return retorno;
+        return self.cursor.fetchall()
+        # for linha in self.cursor.fetchall():
+            # retorno = linha
+
+        # return retorno;
 
 
     def getPullRequestsToAnalizerPull(self):
@@ -166,6 +185,13 @@ class Banco():
             """, (pr_id, filename, additions, deletions, sha) )
         self.conn.commit()
 
+    def salvarFilesPRBulk(self, listaItens):
+        sql = "INSERT INTO pull_request_files (pr_id, filename, additions, deletions, sha) VALUES (%s,%s, %s, %s, %s);"
+        self.cursor.executemany(sql, listaItens )
+        self.conn.commit()
+
+        
+
     def registrarPRsEncontrados(self, repo_id):
         self.cursor.execute("""UPDATE repositorios set prs_recuperados = 1 where id = %s""", (repo_id,) )
         self.conn.commit()
@@ -197,6 +223,7 @@ class Banco():
 
     def getStatusRequestV2(self, token):
         retorno = 0;
+        self.cursor.execute("FLUSH QUERY CACHE;")
         self.cursor.execute("RESET QUERY CACHE;")
         linhas = self.cursor.execute("""select * from startstop where token = %s limit 1;""", (token, ) )
         for linha in self.cursor.fetchall():
@@ -278,6 +305,7 @@ class Banco():
                 SELECT * from repositorios
                     where temTeste = 1
                     and prs_analisados is null
+                    and id in (1856,1935,1827,1826,1968,2418,1961,2189,2057,1812,1978,2645,2334,1807,1905,2417,1833,2029,1861,1880,1917,2012,2257,1883,1950,2458,2391,1824,1965,2559)
                     and id >= %s
                     and id <= %s
                     
@@ -291,3 +319,7 @@ class Banco():
     def registrarPRsAnalisados(self, repo):
         self.cursor.execute(""" UPDATE repositorios set prs_analisados = 1 where id = %s""", (repo, ) )
         self.conn.commit()
+
+    def setTemTestRepositori(self, repo):
+        self.cursor.execute(""" UPDATE repositorios set temTeste = 1 where nameWithOwner = %s""", (repo, ) )
+        self.conn.commit()        

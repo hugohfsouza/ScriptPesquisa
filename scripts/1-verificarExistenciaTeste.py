@@ -47,6 +47,7 @@ def verificar(url):
 
     if count >= 3:
         return True
+
     else:
         return False
 
@@ -55,8 +56,11 @@ lista = banco.getListaReposParaVerificarTestes();
 for repo in lista:
     repo = repo[0]
     url = "http://github.com/"+repo+"/search?q=test"
-    print(str(repo)+"|"+str(verificar(url)))
-    arquivo.write(str(repo)+"|"+str(verificar(url))+"\n")
+    resultTemTeste = verificar(url)
+    if(resultTemTeste == True and resultTemTeste != "Error"):
+        banco.setTemTestRepositori(repo)
+    print(str(repo)+"|"+str(resultTemTeste))
+    arquivo.write(str(repo)+"|"+str(resultTemTeste)+"\n")
 
 
 

@@ -1,0 +1,23 @@
+
+python .\4-recuperaArquivosPR.py token1 540524 581072
+python .\4-recuperaArquivosPR.py token2 581073 622271
+python .\4-recuperaArquivosPR.py token2 622272 663918
+python .\4-recuperaArquivosPR.py token3 663919 707307 
+python .\4-recuperaArquivosPR.py token3 707308 745626 
+python .\4-recuperaArquivosPR.py token4 745627 791092 
+python .\4-recuperaArquivosPR.py token4 791093 824334 
+python .\4-recuperaArquivosPR.py token5 824335 846927 
+python .\4-recuperaArquivosPR.py token5 846928 868705
+python .\4-recuperaArquivosPR.py token6 868706 882000 
+python .\4-recuperaArquivosPR.py token6 882001 917255
+python .\4-recuperaArquivosPR.py token7 917256 960224 
+python .\4-recuperaArquivosPR.py token7 960225 991829
+python .\4-recuperaArquivosPR.py token8 991830 1030948 
+python .\4-recuperaArquivosPR.py token8 1030949 1052391
+
+
+
+12852
+
+- treinamento do yaml
+- 

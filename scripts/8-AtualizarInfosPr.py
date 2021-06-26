@@ -1,29 +1,24 @@
 import requests
 import json
 import time
-import mysql.connector
 from Banco import Banco
 import configparser
-
+from os import system
 import sys
+
+config = configparser.ConfigParser(allow_no_value=True)
+config.read("config.ini")
 
 
 if(len(sys.argv) <= 3):
 	print("Está faltando parametros")
 	exit();
 
-	
-
-
-config = configparser.ConfigParser(allow_no_value=True)
-config.read("config.ini")
 
 tempoEspera 	= int(config.get("GERAL", "tempoEsperaProximaValidacaoToken"))
-# token    		= config.get("TOKENS", "token1")
+token 			= config.get("TOKENS", sys.argv[1])
 banco 			= Banco();
-
-token 	= config.get("TOKENS", sys.argv[1])
-headers	= {'Authorization': token}
+headers 		= {'Authorization': token}
 
 rangeInicial 	= sys.argv[2]
 rangeFinal 		= sys.argv[3]
@@ -42,18 +37,7 @@ def buscarPrs(repo):
 	while(len(result) > 0):
 		for pr in result:
 			try:
-				banco.salvarPR(
-					repo[0], 
-					pr['id'], 
-					pr['number'], 
-					pr['state'], 
-					pr['locked'], 
-					pr['user']['login'], 
-					pr['user']['id'], 
-					pr['url'], 
-					pr['created_at'], 
-					pr['updated_at']
-				)
+				banco.atualizaPr(pr['id'], pr['closed_at'], pr['merged_at'])
 			except Exception as e:
 				pass
 		
@@ -61,20 +45,20 @@ def buscarPrs(repo):
 		result = requisitarGithub("repos/"+str(repo[2])+"/pulls?state=all&sort=created&direction=desc&per_page=100&page="+str(pagina))
 		print("["+str(repo[2])+"] pagina: "+str(pagina))
 
-	banco.registrarPRsEncontrados(repo[0])
+	banco.registrarPRsAnalisados(repo[0])
 	pass
 
 
 while(True):
 
 	if(banco.getStatusRequestV2(token) == 1):
-		repo = banco.getRepoParaRecuperarPRsRange(rangeInicial, rangeFinal)
-		buscarPrs(repo)
-		print(repo[2]+" concluido")
-		
+		repo = banco.getRepoParaRecuperarPRsParallel(rangeInicial, rangeFinal)
+		if(repo):
+			buscarPrs(repo)
+			print(repo[2]+" concluido")
+		else:
+			print("Terminei meu range")
+			time.sleep(tempoEspera)
 	else:
 		print("esperando proxima janela")
 		time.sleep(tempoEspera)
-
-	
-	
