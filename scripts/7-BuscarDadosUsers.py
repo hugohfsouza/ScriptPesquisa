@@ -6,6 +6,7 @@ import configparser
 from os import system
 import sys
 import re
+import uuid
 
 system("title Recupera Nomes dos Usuários")
 
@@ -36,22 +37,23 @@ def requisitarGithub(nameUser, headerExtra=None):
 
 def recuperarDados(user):
 	print(user)
-	statusCode, response = requisitarGithub(user)
+	# statusCode, response = requisitarGithub(user)
+	statusCode = 200
 	if(statusCode == 200):
 	
-		idGithub			= response['id']
-		typeUser			= response['type']
-		company 			= response['company']
-		blog 				= response['blog']
-		location 			= response['location']
-		email 				= response['email']
-		twitter_username 	= response['twitter_username']
-		public_repos 		= response['public_repos']
-		public_gists 		= response['public_gists']
-		followers 			= response['followers']
-		following 			= response['following']
+		idGithub			= ''
+		typeUser			= '' #response['type']
+		company 			= '' #response['company']
+		blog 				= '' #response['blog']
+		location 			= '' #response['location']
+		email 				= '' #response['email']
+		twitter_username 	= '' #response['twitter_username']
+		public_repos 		= '' #response['public_repos']
+		public_gists 		= '' #response['public_gists']
+		followers 			= '' #response['followers']
+		following 			= '' #response['following']
 		login 				= user
-		name 				= response['name']
+		name 				= '' #response['name']
 
 		banco.saveUser(idGithub, typeUser, company, blog, location, email, twitter_username, public_repos, public_gists, followers, following, login, name)
 	else:
