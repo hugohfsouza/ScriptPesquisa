@@ -37,6 +37,14 @@ def verificarUsoApiGithub():
 		dt_object = datetime.fromtimestamp(y["resources"]["core"]['reset'])
 		print("[Max Reqs] "+str(y["resources"]["core"]['remaining']) + " [Reset] "+str(dt_object) + " [TOKEN] "+str(token) )
 
+		# if(y["resources"]["graphql"]['remaining'] < limiteMaximo):
+		# 	banco.setStatusRequestV2(0, token)
+		# else:
+		# 	banco.setStatusRequestV2(1, token)
+
+		# dt_object = datetime.fromtimestamp(y["resources"]["graphql"]['reset'])
+		# print("[Max Reqs] "+str(y["resources"]["graphql"]['remaining']) + " [Reset] "+str(dt_object) + " [TOKEN] "+str(token) )
+
 
 banco.verificarExistenciaDeTokensNaBase(tokens)
 
