@@ -36,16 +36,8 @@ dbconfig = {
     "db":       config.get("MYSQL", "db"),
 }
 
-conn = mysql.connector.connect(**dbconfig)
+conn = mysql.connector.connect(pool_name = "mypool1", pool_size = 1,**dbconfig)
 cursor = conn.cursor();
-
-
-configuracao  = config.items("TOKENS")
-tokens = []
-for x in configuracao:
-  tokens.append(x[1])
-
-
 
 
 banco = Banco();
@@ -66,7 +58,7 @@ def requisitarGithub(url, headerExtra=None):
 
 
 
-def buscarArquivos(pullRequest, urlOriginal):
+def buscarArquivos(pullRequest, urlOriginal, idRegistro):
 	pagina = 1
 	result, status_code = requisitarGithub(str(pullRequest)+"/files?per_page=100&page="+str(pagina))
 
@@ -107,27 +99,27 @@ def buscarArquivos(pullRequest, urlOriginal):
 			result = []
 
 	
-	cursor.execute("""update analisegithub4.users_testam set arquivos_encontrados = 1 where urlPR = %s """,(urlOriginal,))
+	cursor.execute("""update analisegithub4.users_testam set arquivos_encontrados = 1 where id = %s """,(idRegistro,))
 	conn.commit();
 
 	pass
 
 
-def intermediadio(urlOriginal):
+def intermediadio(urlOriginal, id):
 	urlApi = urlOriginal.replace("https://github.com", "https://api.github.com/repos")
 	urlApi = urlApi.replace("pull", "pulls")
 
-	buscarArquivos(urlApi, urlOriginal)
+	buscarArquivos(urlApi, urlOriginal, id)
 
 
 
 while(True):
 	if(banco.getStatusRequestV2(token) == 1):
-		cursor.execute(""" SELECT urlPR from analisegithub4.users_testam where arquivos_encontrados is null and id >= %s and id <= %s limit 100 """, (rangeInicial, rangeFinal))
+		cursor.execute(""" SELECT urlPR, id from analisegithub4.users_testam where arquivos_encontrados is null and id >= %s and id <= %s limit 100 """, (rangeInicial, rangeFinal))
 		itens = cursor.fetchall();
 
 		for link in itens:
-			intermediadio(link[0])
+			intermediadio(link[0], link[1])
 
 		print("acabei")
 

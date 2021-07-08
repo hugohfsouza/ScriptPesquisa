@@ -48,11 +48,39 @@ def trataData(data):
 	else:
 		return data
 
-def requisitarPR(url, urlOriginal):
+def requisitarPR(url, urlOriginal, idRegistro):
 	result, status_code = requisitarGithub(url)
 
 	if(status_code == 200):
-		cursor.execute("""UPDATE analisegithub4.users_testam 
+			return (
+				trataData(result['merged_at']),
+				result['state'],
+				result['number'],
+				trataData(result['created_at']),
+				trataData(result['updated_at']),
+				trataData(result['closed_at']),
+				result['additions'],
+				result['deletions'],
+				idRegistro
+				)
+	else:
+		cursor.execute("""UPDATE analisegithub4.users_testam set error = 1 where urlPR = %s""",(urlOriginal,))
+		conn.commit();
+	
+
+def buscarDadosPR(urlPR, id):
+
+	urlApi = urlPR.replace("https://github.com", "https://api.github.com/repos")
+	urlApi = urlApi.replace("pull", "pulls")
+	return requisitarPR(urlApi, urlPR, id)
+
+banco = Banco();
+
+def salvarTodos(batch):
+
+
+
+	cursor.executemany("""UPDATE analisegithub4.users_testam 
 			set merged_at =  %s,
 			state = %s,
 			number = %s,
@@ -62,42 +90,26 @@ def requisitarPR(url, urlOriginal):
 			additions = %s,
 			deletions = %s
 
-			where urlPR = %s
+			where id = %s
 
-			""",(
-				trataData(result['merged_at']),
-				result['state'],
-				result['number'],
-				trataData(result['created_at']),
-				trataData(result['updated_at']),
-				trataData(result['closed_at']),
-				result['additions'],
-				result['deletions'],
-				urlOriginal
-				))
-		conn.commit();
-	else:
-		cursor.execute("""UPDATE analisegithub4.users_testam set error = 1 where urlPR = %s""",(urlOriginal,))
-		conn.commit();
-	
-
-def buscarDadosPR(urlPR):
-
-	urlApi = urlPR.replace("https://github.com", "https://api.github.com/repos")
-	urlApi = urlApi.replace("pull", "pulls")
-	requisitarPR(urlApi, urlPR)
-
-banco = Banco();
-
+			""",batch)
+	conn.commit();
 
 while(True):
 	if(banco.getStatusRequestV2(token) == 1):
-		cursor.execute(""" SELECT urlPR from analisegithub4.users_testam where number is null and id >= %s and id <= %s and error is null order by id  limit 100 """, (rangeInicial, rangeFinal))
+		cursor.execute(""" SELECT urlPR, id from analisegithub4.users_testam where number is null and id >= %s and id <= %s and error is null order by id  limit 10 """, (rangeInicial, rangeFinal))
 		itens = cursor.fetchall();
 
+		arrayDados = []
 		for prs in itens:
-			buscarDadosPR(prs[0])
+			dados = buscarDadosPR(prs[0], prs[1] )
+			arrayDados.append(dados)
+
+		salvarTodos(arrayDados)
 
 		print("acabei")
+	else:
+		print("esperando proxima janela")
+		time.sleep(tempoEspera)
 
 	

@@ -15,7 +15,7 @@ class Banco():
             "db":       config.get("MYSQL", "db"),
         }
 
-        self.conn = mysql.connector.connect(pool_name = "mypool", pool_size = 5,**dbconfig)
+        self.conn = mysql.connector.connect(pool_name = "mypool", pool_size = 1,**dbconfig)
         self.cursor = self.conn.cursor();
 
     def verificarExistenciaDeTokensNaBase(self, tokens):
