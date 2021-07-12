@@ -13,13 +13,10 @@ if(len(sys.argv) <= 3):
 	exit();
 
 	
-
-
 config = configparser.ConfigParser(allow_no_value=True)
 config.read("config.ini")
 
 tempoEspera 	= int(config.get("GERAL", "tempoEsperaProximaValidacaoToken"))
-# token    		= config.get("TOKENS", "token1")
 banco 			= Banco();
 
 token 	= config.get("TOKENS", sys.argv[1])
@@ -38,39 +35,42 @@ def requisitarGithub(url, headerExtra=None):
 def buscarPrs(repo):
 	pagina = 1
 
-	result = requisitarGithub("repos/"+str(repo[2])+"/pulls?state=all&sort=created&direction=desc&per_page=100&page="+str(pagina))
+	result = requisitarGithub("repos/"+str(repo[1])+"/pulls?state=all&sort=created&direction=desc&per_page=100&page="+str(pagina))
 	while(len(result) > 0):
 		for pr in result:
 			try:
 				banco.salvarPR(
 					repo[0], 
-					pr['id'], 
 					pr['number'], 
 					pr['state'], 
-					pr['locked'], 
+					pr['url'],
 					pr['user']['login'], 
-					pr['user']['id'], 
-					pr['url'], 
 					pr['created_at'], 
-					pr['updated_at']
+					pr['updated_at'],
+					pr['closed_at'],
+					pr['merged_at']
 				)
 			except Exception as e:
 				pass
-		
+				
 		pagina += 1
-		result = requisitarGithub("repos/"+str(repo[2])+"/pulls?state=all&sort=created&direction=desc&per_page=100&page="+str(pagina))
-		print("["+str(repo[2])+"] pagina: "+str(pagina))
+		result = requisitarGithub("repos/"+str(repo[1])+"/pulls?state=all&sort=created&direction=desc&per_page=100&page="+str(pagina))
+		print("["+str(repo[1])+"] pagina: "+str(pagina))
 
 	banco.registrarPRsEncontrados(repo[0])
 	pass
 
 
 while(True):
-
 	if(banco.getStatusRequestV2(token) == 1):
 		repo = banco.getRepoParaRecuperarPRsRange(rangeInicial, rangeFinal)
-		buscarPrs(repo)
-		print(repo[2]+" concluido")
+		if(repo):
+			buscarPrs(repo)
+			print(repo[1]+" concluido")
+		else:
+			print("conclui tudo")
+			time.sleep(tempoEspera)
+
 		
 	else:
 		print("esperando proxima janela")

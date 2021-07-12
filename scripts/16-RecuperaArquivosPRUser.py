@@ -47,7 +47,7 @@ def requisitarGithub(url, headerExtra=None):
 		print("Requisitando...")
 		response = requests.get(url, headers=headers)
 		print(response.status_code)
-		if(response.status_code == 200 or response.status_code == 404):
+		if(response.status_code == 200 or response.status_code == 404 or response.status_code == 422):
 			break
 		else:
 			time.sleep(5)
@@ -115,7 +115,7 @@ def intermediadio(urlOriginal, id):
 
 while(True):
 	if(banco.getStatusRequestV2(token) == 1):
-		cursor.execute(""" SELECT urlPR, id from analisegithub4.users_testam where arquivos_encontrados is null and id >= %s and id <= %s limit 100 """, (rangeInicial, rangeFinal))
+		cursor.execute(""" SELECT urlPR, id from analisegithub4.users_testam where arquivos_encontrados is null and id >= %s and id <= %s limit 30 """, (rangeInicial, rangeFinal))
 		itens = cursor.fetchall();
 
 		for link in itens:

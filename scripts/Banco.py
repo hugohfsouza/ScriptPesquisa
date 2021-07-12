@@ -27,11 +27,7 @@ class Banco():
 
 
     def getListaReposParaVerificarTestes(self):
-        linhas = self.cursor.execute("""
-                SELECT nameWithOwner from repositorios
-                    where temTeste is null 
-                    and prs_recuperados is null
-            """)
+        linhas = self.cursor.execute("""SELECT nameWithOwner from analisegithub5.repositorios where temTeste is null and languages like 'Java%' and languages not like 'Javascript%' and id >= 66403""")
         return self.cursor.fetchall();
 
 
@@ -53,11 +49,11 @@ class Banco():
     def getRepoParaRecuperarPRsRange(self, inicio, fim):
         retorno = False;
         linhas = self.cursor.execute("""
-                SELECT * from repositorios
-                    where temTeste = 1
-                    and prs_recuperados is null
-                    and id between %s and %s
-                    -- and temTeste = 0
+                SELECT id, nameWithOwner from analisegithub5.repositorios_selecionados
+                    where 1=1
+                    and prs_recuperadas is null
+                    and id >= %s and id <= %s
+                    order by id
                     limit 1
             """, (inicio, fim))
         for linha in self.cursor.fetchall():
@@ -100,27 +96,20 @@ class Banco():
         return retorno;
 
     def getPullRequestsToAnalizerRange(self, inicio, fim):
-
         retorno = False;
-
         linhas = self.cursor.execute("""
-                SELECT b.* from repositorios as a
-                    inner join pull_requests as b on (a.id = b.repo_id)
-                    where a.temTeste = 1
-                    and a.prs_recuperados = 1
-                    and b.pr_analisado = 0
-                    and a.id in (1856,1935,1827,1826,1968,2418,1961,2189,2057,1812,1978,2645,2334,1807,1905,2417,1833,2029,1861,1880,1917,2012,2257,1883,1950,2458,2391,1824,1965,2559)
-                    and b.id >= """+str(inicio)+""" 
-                    and b.id <= """+str(fim)+"""
-                    order by id desc
-                    limit 10
+                SELECT id, url 
+                from analisegithub5.pull_requests 
+                where 
+                    id >= """+str(inicio)+""" 
+                    and id <= """+str(fim)+""" 
+                    and hasTest is null
+                    and analisado = 0
+                limit 10
             """)
 
         return self.cursor.fetchall()
-        # for linha in self.cursor.fetchall():
-            # retorno = linha
 
-        # return retorno;
 
 
     def getPullRequestsToAnalizerPull(self):
@@ -145,27 +134,27 @@ class Banco():
         self.conn.commit()
 
 
-    def salvarPR(self, repo_id, github_id, number, state, locked, user, user_id, url, created_at, updated_at):
+    def salvarPR(self, repo_id, number, state, url, user, created_at, updated_at, closed_at, merged_at):
         self.cursor.execute(
             """
                 INSERT INTO 
-                    pull_requests 
+                    analisegithub5.pull_requests 
                         (
                             repo_id, 
-                            github_id, 
                             number, 
                             state, 
-                            locked, 
-                            user, 
-                            user_id, 
                             url, 
+                            user, 
                             created_at, 
-                            updated_at)
+                            updated_at,
+                            closed_at,
+                            merged_at
+                        )
                     VALUES 
-                        ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+                        ( %s, %s, %s, %s, %s, %s, %s, %s, %s);
 
 
-            """, (repo_id, github_id, number, state, locked, user, user_id, url, created_at, updated_at) )
+            """, (repo_id, number, state, url, user, created_at, updated_at, closed_at, merged_at) )
         self.conn.commit()
 
 
@@ -186,18 +175,18 @@ class Banco():
         self.conn.commit()
 
     def salvarFilesPRBulk(self, listaItens):
-        sql = "INSERT INTO pull_request_files (pr_id, filename, additions, deletions, sha) VALUES (%s,%s, %s, %s, %s);"
+        sql = "INSERT INTO analisegithub5.pull_request_files (pr_id, filename, additions, deletions, sha) VALUES (%s,%s, %s, %s, %s);"
         self.cursor.executemany(sql, listaItens )
         self.conn.commit()
 
         
 
     def registrarPRsEncontrados(self, repo_id):
-        self.cursor.execute("""UPDATE repositorios set prs_recuperados = 1 where id = %s""", (repo_id,) )
+        self.cursor.execute("""UPDATE analisegithub5.repositorios_selecionados set prs_recuperadas = 1 where id = %s""", (repo_id,) )
         self.conn.commit()
 
     def registraArquivosEncontrados(self, pullRequest):
-        self.cursor.execute("""UPDATE pull_requests set pr_analisado = 1 where id = %s""", (pullRequest[0] ,) )
+        self.cursor.execute("""UPDATE analisegithub5.pull_requests set analisado = 1 where id = %s""", (pullRequest[0] ,) )
         self.conn.commit()
 
 
@@ -321,5 +310,5 @@ class Banco():
         self.conn.commit()
 
     def setTemTestRepositori(self, repo):
-        self.cursor.execute(""" UPDATE repositorios set temTeste = 1 where nameWithOwner = %s""", (repo, ) )
+        self.cursor.execute("""UPDATE analisegithub5.repositorios set temTeste = 1 where nameWithOwner = %s""", (repo, ) )
         self.conn.commit()        

@@ -38,12 +38,14 @@ def requisitarGithub(url, headerExtra=None):
 
 
 def buscarArquivos(pullRequest):
+
 	pagina = 1
-	result = requisitarGithub(str(pullRequest[6])+"/files?per_page=100&page="+str(pagina))
+	result = requisitarGithub(str(pullRequest[1])+"/files?per_page=100&page="+str(pagina))
 	
 	while(len(result) > 0 and (not 'errors' in result) ):
 		listaArquivosPR = []
 		print(pullRequest[0])
+
 		for file in result:
 			listaArquivosPR.append(
 				(
@@ -63,7 +65,7 @@ def buscarArquivos(pullRequest):
 	
 		if(len(result) == 100):
 			pagina += 1
-			result = requisitarGithub(str(pullRequest[6])+"/files?per_page=100&page="+str(pagina))
+			result = requisitarGithub(str(pullRequest[1])+"/files?per_page=100&page="+str(pagina))
 		else:
 			result = []
 
@@ -78,6 +80,7 @@ while(True):
 		pullRequests = banco.getPullRequestsToAnalizerRange(rangeInicial, rangeFinal)
 		
 		for pullRequest in pullRequests:
+			print(pullRequest[0])
 			if(pullRequest):
 				buscarArquivos(pullRequest)
 				print("id: "+ str(pullRequest[0]))

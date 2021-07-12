@@ -97,7 +97,7 @@ def salvarTodos(batch):
 
 while(True):
 	if(banco.getStatusRequestV2(token) == 1):
-		cursor.execute(""" SELECT urlPR, id from analisegithub4.users_testam where number is null and id >= %s and id <= %s and error is null order by id  limit 10 """, (rangeInicial, rangeFinal))
+		cursor.execute(""" SELECT urlPR, id from analisegithub4.users_testam where number is null and id >= %s and id <= %s and error is null order by id  limit 2 """, (rangeInicial, rangeFinal))
 		itens = cursor.fetchall();
 
 		arrayDados = []

@@ -2,9 +2,14 @@ import mysql.connector
 import json
 import time
 import configparser
+import sys
 
 config = configparser.ConfigParser(allow_no_value=True)
 config.read("config.ini")
+
+rangeInicial 	= sys.argv[1]
+rangeFinal 		= sys.argv[2]
+
 
 class Banco():
 
@@ -16,7 +21,7 @@ class Banco():
 		    "db":       config.get("MYSQL", "db"),
 		}
 
-		self.conn = mysql.connector.connect(pool_name = "mypool", pool_size = 10,**dbconfig)
+		self.conn = mysql.connector.connect(pool_name = "mypool", pool_size = 2,**dbconfig)
 		self.cursor = self.conn.cursor();
 
 	def getCountComTeste(self, urlPR):
@@ -41,14 +46,15 @@ class Banco():
 		return aux[0]+"/"+aux[1]
 		
 
-	def ajustar(self):
+	def ajustar(self, inicio, fim):
 		retorno = False;
-		linhas = self.cursor.execute("""select urlPR from analisegithub4.users_testam where arquivos_encontrados = 1 and arquivos_processados is null limit 50""")
+		linhas = self.cursor.execute("""select urlPR, id from analisegithub4.users_testam where arquivos_encontrados = 1 and arquivos_processados is null and id >= %s and id <= %s limit 100""", (inicio, fim))
 		lista = self.cursor.fetchall()
 
 		print("Ajustando: ["+str(len(lista))+"]")
 
 		for prAberto in lista:
+			print(prAberto[1])
 			qtdCodigo 	= self.getCountSemTeste(prAberto[0])
 			qtdTeste 	= self.getCountComTeste(prAberto[0])
 			
@@ -72,5 +78,5 @@ class Banco():
 banco = Banco()
 
 while(True):
-	banco.ajustar()
+	banco.ajustar(rangeInicial, rangeFinal)
 	time.sleep(1)

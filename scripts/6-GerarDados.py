@@ -28,7 +28,7 @@ class Banco():
 			"host":     config.get("MYSQL", "host"),
 		    "user":     config.get("MYSQL", "user"),
 		    "passwd":   config.get("MYSQL", "passwd"),
-		    "db":       config.get("MYSQL", "db"),
+		    "db":       "analisegithub5",
 		}
 
 		self.conn = mysql.connector.connect(pool_name = "mypool", pool_size = 10,**dbconfig)
@@ -38,6 +38,7 @@ class Banco():
 		# linhas = self.cursor.execute("""SELECT id, nameWithOwner from repositorios where id in (1657,1432,1231,1750,1190,1286,909,1549,982,1032,1371,987,1215,1716,1080,928,1010,1504,1094,1559,991,1384,1486,1000,1129,1727,1303,919,901,1174)""")
 		# linhas = self.cursor.execute("""SELECT id, nameWithOwner from repositorios where id in (1842,2085,1985,2479,2113,1839,1899,2356,1895,2499,2333,1933,1939,1989,2122,2324,1827,2409,1996,1814,1867,2539,2007,2291,2000,2247,2156,2051,2112,2592)""")
 		# linhas = self.cursor.execute("""SELECT id, nameWithOwner from repositorios where id in (1856,1935,1827,1826,1968,2418,1961,2189,2057,1812,1978,2645,2334,1807,1905,2417,1833,2029,1861,1880,1917,2012,2257,1883,1950,2458,2391,1824,1965,2559)""")
+		linhas = self.cursor.execute("""SELECT id, nameWithOwner from repositorios_selecionados""")
 		return self.cursor.fetchall()
 
 	def getPessoasRepositorio(self, repo_id):
