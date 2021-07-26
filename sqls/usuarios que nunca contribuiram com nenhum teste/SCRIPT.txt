@@ -1,0 +1,6 @@
+SELECT 
+		pr.user
+	FROM pull_requests AS pr
+		INNER JOIN repositorios_selecionados AS rs ON (pr.repo_id = rs.id)
+	group by user
+	having sum(pr.hasTest) = 0 and sum(pr.hasCode) > 0

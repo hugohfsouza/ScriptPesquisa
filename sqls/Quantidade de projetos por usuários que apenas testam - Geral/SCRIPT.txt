@@ -1,0 +1,15 @@
+select t2.qtdProjetosLinguagem, count(user) from (
+	SELECT 
+		t1.user,
+		count(1) as qtdProjetosLinguagem
+	FROM (
+		SELECT 
+			pr.user
+		FROM pull_requests AS pr
+			INNER JOIN repositorios_selecionados AS rs ON (pr.repo_id = rs.id)
+		group by pr.user
+		having sum(pr.hasTest) > 0 and sum(pr.hasCode) = 0
+	) AS t1
+	group by t1.user
+) as t2
+group by  t2.qtdProjetosLinguagem

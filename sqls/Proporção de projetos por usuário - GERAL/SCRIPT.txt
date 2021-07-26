@@ -1,0 +1,45 @@
+
+CREATE TEMPORARY TABLE tabelaTemporaria(nameWithOwner VARCHAR(100), linguagem VARCHAR(100), user VARCHAR(100), tipo VARCHAR(100));
+
+insert into tabelaTemporaria 
+SELECT
+	rs.nameWithOwner,
+    rs.linguagemPrincipal,
+	pr.user,
+    'Apenas Teste'
+FROM pull_requests AS pr
+	INNER JOIN repositorios_selecionados AS rs ON (pr.repo_id = rs.id)
+group by rs.nameWithOwner,
+    rs.linguagemPrincipal,
+	pr.user
+having sum(pr.hasTest) > 0 and sum(pr.hasCode) = 0;
+
+insert into tabelaTemporaria 
+SELECT
+	rs.nameWithOwner,
+    rs.linguagemPrincipal,
+	pr.user,
+    'Apenas Codigo'
+FROM pull_requests AS pr
+	INNER JOIN repositorios_selecionados AS rs ON (pr.repo_id = rs.id)
+group by rs.nameWithOwner,
+    rs.linguagemPrincipal,
+	pr.user
+having sum(pr.hasTest) = 0 and sum(pr.hasCode) > 0;
+
+
+insert into tabelaTemporaria 
+SELECT
+	rs.nameWithOwner,
+    rs.linguagemPrincipal,
+	pr.user,
+    'Codigo e Teste'
+FROM pull_requests AS pr
+	INNER JOIN repositorios_selecionados AS rs ON (pr.repo_id = rs.id)
+group by rs.nameWithOwner,
+    rs.linguagemPrincipal,
+	pr.user
+having sum(pr.hasTest) > 0 and sum(pr.hasCode) > 0;
+
+
+select * from tabelaTemporaria

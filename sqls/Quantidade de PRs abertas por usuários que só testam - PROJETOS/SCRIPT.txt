@@ -1,0 +1,14 @@
+SELECT linguagemPrincipal, qtdPRs, count(user) FROM (
+	SELECT 
+		rs.nameWithOwner,
+		rs.linguagemPrincipal,
+		pr.user,
+		count(1) as qtdPRs
+	FROM pull_requests AS pr
+		INNER JOIN repositorios_selecionados AS rs ON (pr.repo_id = rs.id)
+	group by rs.nameWithOwner,
+		rs.linguagemPrincipal,
+		pr.user
+	having sum(pr.hasTest) > 0 and sum(pr.hasCode) = 0
+) AS T1 
+GROUP BY T1.linguagemPrincipal, t1.qtdPRs

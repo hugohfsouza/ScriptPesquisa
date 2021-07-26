@@ -1,0 +1,15 @@
+select t2.qtdPRs, count(user) 
+from (		
+	SELECT 
+		pr.user,
+		count(1) as qtdPRs    
+	FROM pull_requests AS pr
+		INNER JOIN repositorios_selecionados AS rs ON (pr.repo_id = rs.id)
+	group by user
+	having sum(pr.hasTest) > 0 and sum(pr.hasCode) = 0
+) as t2
+group by  t2.qtdPRs
+
+
+
+
